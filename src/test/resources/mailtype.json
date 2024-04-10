@@ -1,0 +1,11 @@
+{
+  "taskType": "PICKUP_UKD",
+  "route": "МВ002Ю",
+  "weight": 8208,
+  "dimensions": [
+    "height",
+    "length",
+    "width"
+  ],
+  "printDocument": true
+}
