@@ -27,69 +27,68 @@ public class ParsingFileTest {
     @Test
     void parsingXlsFileTest() throws Exception {
 
-        ZipInputStream is = new ZipInputStream(cl.getResourceAsStream("save.zip"));
-
         ZipFile zf = new ZipFile("src/test/resources/save.zip");
 
-        ZipEntry entry;
-        while ((entry = is.getNextEntry()) != null) {
-            String fileName = entry.getName();
-            boolean isXlsFile = fileName.equals("sample1.xls");
+        ZipEntry entry = zf.getEntry("sample1.xls");
 
-            if (isXlsFile) {
+        InputStream inputStream = zf.getInputStream(entry);
+        try {
 
-                InputStream inputStream = zf.getInputStream(entry);
-                try {
+            XLS xls = new XLS(inputStream);
+            String actualValue = xls.excel.getSheetAt(0).getRow(0).getCell(0).getStringCellValue();
+            assertTrue(actualValue.contains("test1"));
+        } finally {
+            inputStream.close();
 
-                    XLS xls = new XLS(inputStream);
-                    String actualValue = xls.excel.getSheetAt(0).getRow(0).getCell(0).getStringCellValue();
-                    assertTrue(actualValue.contains("test1"));
-                } finally {
-                    inputStream.close();
-                }
 
-                break;
-            }
         }
     }
 
     @Test
     void parsingPdfFileTest() throws Exception {
-        ZipInputStream is = new ZipInputStream(cl.getResourceAsStream("save.zip"));
         ZipFile zf = new ZipFile(new File("src/test/resources/save.zip"));
-        ZipEntry entry;
-        while ((entry = is.getNextEntry()) != null) {
-            if (entry.getName().equals("obrazec.pdf")) {
-                try (InputStream inputStream = zf.getInputStream(entry)) {
-                    PDF pdf = new PDF(inputStream);
-                    Assertions.assertEquals("ЗАЯВЛЕНИЕ О ВЫДАЧЕ ПАСПОРТА", pdf.title);
-                }
+        ZipEntry entry = zf.getEntry("obrazec.pdf");
+        InputStream inputStream = zf.getInputStream(entry);
+
+        try {
+            PDF pdf = new PDF(inputStream);
+            Assertions.assertEquals("ЗАЯВЛЕНИЕ О ВЫДАЧЕ ПАСПОРТА", pdf.title);
 
 
-            }
+        } finally {
+            inputStream.close();
+
         }
     }
+
 
     @Test
     void parsingCsvFileTest() throws Exception {
-        ZipInputStream is = new ZipInputStream(cl.getResourceAsStream("save.zip"));
         ZipFile zf = new ZipFile(new File("src/test/resources/save.zip"));
-        ZipEntry entry;
-        while ((entry = is.getNextEntry()) != null) {
-            if (entry.getName().equals("example2.csv")) {
-                try (InputStream inputStream = zf.getInputStream(entry)) {
-                    CSVReader csvReader = new CSVReader(new InputStreamReader(inputStream));
-                    List<String[]> data = csvReader.readAll();
-                    Assertions.assertEquals(4, data.size());
-                    Assertions.assertArrayEquals(
-                            new String[]{"Name", "Job Title", "Address", "State", "City"},
-                            data.get(1));
+        ZipEntry entry = zf.getEntry("example2.csv");
+        InputStream inputStream = zf.getInputStream(entry);
 
-                }
-            }
+        try {
+            CSVReader csvReader = new CSVReader(new InputStreamReader(inputStream));
+            List<String[]> data = csvReader.readAll();
+            Assertions.assertEquals(4, data.size());
+            Assertions.assertArrayEquals(
+                    new String[]{"Name", "Job Title", "Address", "State", "City"},
+                    data.get(1));
+
+        } finally {
+            inputStream.close();
         }
-    }
 
+    }
+ @Test
+ void tryToParsingNoExistsFileTest() throws Exception{
+     ZipFile zf = new ZipFile(new File("src/test/resources/save.zip"));
+     ZipEntry entry = zf.getEntry("hui.csv");
+     Assertions.assertNull(entry);
+
+
+ }
 
     @Test
     void parsingJsonTest() throws Exception {
@@ -104,6 +103,7 @@ public class ParsingFileTest {
         Assertions.assertEquals("width", actualValues.get(2));
         Assertions.assertEquals(actualValues.size(), 3);
     }
+
 }
 
 
